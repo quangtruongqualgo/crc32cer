@@ -44,7 +44,7 @@
 
 -on_load(init/0).
 
--export([crc32/1, crc32/2, nif_d/2, nif/1]).
+-export([crc32/1, crc32/2, nif_d/2, nif/1, nif/2, nif_iolist/1, nif_iolist/2, nif_iolist_d/1, nif_iolist_d/2]).
 
 -define(LIBNAME, "libcrc32cer_nif").
 
@@ -63,52 +63,32 @@ init() ->
             ok
     end.
 
-%% @doc Calculate CRC32C checksum of iodata with initial CRC of 0.
-%%
-%% This is the most commonly used function for CRC32C calculation. It processes
-%% any iodata (binary, iolist, or mixed) and returns the CRC32C checksum.
-%%
-%% == Examples ==
-%% ```
-%% %% Binary data
-%% Crc1 = crc32cer:nif(<<"hello world">>),
-%%
-%% %% Iolist data
-%% IoList = [<<"hello">>, " ", <<"world">>],
-%% Crc2 = crc32cer:nif(IoList),
-%%
-%% %% Mixed data
-%% Mixed = [<<"header">>, [<<"nested">>, <<"data">>], <<"footer">>],
-%% Crc3 = crc32cer:nif(Mixed),
-%% ```
-%%
-%% IoData The iodata to calculate CRC32C for
-%% Returns the CRC32C checksum as a non-negative integer
 -spec nif(iodata()) -> non_neg_integer().
 nif(Data) ->
     crc32(Data).
 
-%% @doc Calculate CRC32C checksum of iodata with initial CRC of 0 (dirty scheduler job).
-%%
-%% This function is identical to `nif/1` but runs as a dirty scheduler job, which
-%% allows it to use more CPU time without blocking the scheduler. Use this
-%% for CPU-intensive checksum calculations.
-%%
-%% == Examples ==
-%% ```
-%% %% Large data processing
-%% LargeData = binary:copy(<<"data">>, 1000000),
-%% Crc = crc32cer:nif_d(LargeData),
-%%
-%% %% Iolist processing
-%% IoList = [binary:copy(<<"chunk">>, 1000) || _ <- lists:seq(1, 100)],
-%% Crc2 = crc32cer:nif_d(IoList),
-%% ```
-%%
-%% IoData The iodata to calculate CRC32C for
-%% Returns the CRC32C checksum as a non-negative integer
+-spec nif(non_neg_integer(), iodata()) -> non_neg_integer().
+nif(Acc, Data) ->
+    crc32(Acc, Data).
+
 -spec nif_d(non_neg_integer(), iodata()) -> non_neg_integer().
 nif_d(Acc, Data) ->
+    crc32(Acc, Data).
+
+-spec nif_iolist(iodata()) -> non_neg_integer().
+nif_iolist(Data) ->
+    crc32(Data).
+
+-spec nif_iolist(non_neg_integer(), iodata()) -> non_neg_integer().
+nif_iolist(Acc, Data) ->
+    crc32(Acc, Data).
+
+-spec nif_iolist_d(iodata()) -> non_neg_integer().
+nif_iolist_d(Data) ->
+    crc32(Data).
+
+-spec nif_iolist_d(non_neg_integer(), iodata()) -> non_neg_integer().
+nif_iolist_d(Acc, Data) ->
     crc32(Acc, Data).
 
 -spec crc32(iodata()) -> non_neg_integer().
